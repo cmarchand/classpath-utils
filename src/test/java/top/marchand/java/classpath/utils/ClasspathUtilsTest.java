@@ -29,11 +29,18 @@
  */
 package top.marchand.java.classpath.utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -42,27 +49,24 @@ import static org.junit.Assert.*;
 public class ClasspathUtilsTest {
     
     @Test
-    public void testClasspathNotEmpty() throws ClasspathException {
+    public void testClasspathNotEmpty() throws ClasspathException, IOException {
         List<String> ret = ClasspathUtils.getClassPathElements();
-        assertFalse("not classpath elements found", ret.isEmpty());
-        for(String s:ret) {
-            System.out.println("Found: "+s);
-        }
+        assertFalse("no classpath elements found", ret.isEmpty());
         ret = ClasspathUtils.getClasspathElements(Assert.class.getClassLoader());
-        assertFalse("not classpath elements found", ret.isEmpty());
+        assertFalse("no classpath elements found", ret.isEmpty());
         ClassLoader assertCL = Assert.class.getClassLoader();
-        System.out.println("Assert classloader is "+assertCL+" "+assertCL.getClass().getName());
-        for(String s:ret) {
-            System.out.println("Found: "+s);
+        assertSame("AssertClassLoader is not same as current classloader", assertCL, ClasspathUtils.class.getClassLoader());
+        System.out.println("this classloader is "+this.getClass().getClassLoader());
+        System.out.println(((URLClassLoader)this.getClass().getClassLoader()).findResource("org/junit/Assert.class").toString());
+        for(URL url:((URLClassLoader)this.getClass().getClassLoader()).getURLs()) {
+            System.out.println(url);
+//            Files.copy(url.openStream(), new File("toto.jar").toPath());
         }
-        URL url = Assert.class.getClassLoader().getResource("org/junit/Assert.class");
-        System.out.println("Assert.class is at "+url.toExternalForm());
-        assertSame("AssertClassLoader is not same a current classloader", assertCL, ClasspathUtils.class.getClassLoader());
     }
     @Test
     public void testJUnitIsIn() throws ClasspathException {
         ClasspathUtils cu = new ClasspathUtils(this.getClass().getClassLoader());
-        String junitUri = cu.getArtifactJarUri("junit", "junit");
-        assertNotNull("JUnit URI is null", junitUri);
+        String junitUri = cu.getArtifactJarUri("org.apache.maven.surefire", "surefire-junit4");
+        assertNotNull("surefire-junit URI is null", junitUri);
     }
 }
