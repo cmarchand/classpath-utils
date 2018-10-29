@@ -9,6 +9,7 @@
 
     <name>Classpath Utils</name>
     <description>This project provide utility classes to query / modify classpath at runtime</description>
+    <url>https://github.com/cmarchand/classpath-utils/</url>
 
     <licenses>
         <license>
@@ -185,6 +186,17 @@
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                      <artifactId>maven-source-plugin</artifactId>
+                      <version>3.0.1</version>
+                      <executions>
+                        <execution>
+                          <id>attach-sources</id>
+                          <phase>validate</phase>
+                          <goals><goal>jar-no-fork</goal></goals>
+                        </execution>
+                      </executions>
                     </plugin>
                 </plugins>
             </build>

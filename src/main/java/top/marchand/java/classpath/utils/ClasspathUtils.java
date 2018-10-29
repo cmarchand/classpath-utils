@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- *
+ * An utility class to find jar in classpath
  * @author cmarchand
  */
 public class ClasspathUtils {
@@ -46,6 +46,11 @@ public class ClasspathUtils {
     private final List<String> classpathElements;
     private final ClassLoader classloader;
     
+    /**
+     * Constructs a new ClasspathUtils based on specified ClassLoader
+     * @param cl The classloader to use
+     * @throws ClasspathException In case of problem
+     */
     public ClasspathUtils(ClassLoader cl)  throws ClasspathException {
         super();
         this.classloader = cl;
@@ -55,16 +60,16 @@ public class ClasspathUtils {
     /**
      * Computes the location of the jar identified by <tt>(groupId, artifactId)</tt>.
      * The artifactJar must be in classpath entrie.
-     * @param groupId
-     * @param artifactId
+     * @param groupId Jar's groupId
+     * @param artifactId Jar's artifactId
      * @return The jar URI
-     * @throws ClasspathException
+     * @throws ClasspathException In case of problem
      */
     public String getArtifactJarUri(final String groupId, final String artifactId) throws ClasspathException {
         try {
             String thisJar = null;
             String marker = createMarker(groupId, artifactId);
-            for(String s:getClassPathElements()) {
+            for(String s:classpathElements) {
                 if(s.contains(marker)) {
                     thisJar = s;
                     break;
@@ -82,9 +87,9 @@ public class ClasspathUtils {
 
     /**
      * Return all entries in classloader
-     * @param cl
+     * @param cl The classloader to use
      * @return Entries found, if <tt>cl</tt> is a {@link URLClassLoader}
-     * @throws ClasspathException 
+     * @throws ClasspathException In case of problem
      */
     public static List<String> getClasspathElements(ClassLoader cl) throws ClasspathException {
         if(cl instanceof URLClassLoader) {
@@ -104,7 +109,7 @@ public class ClasspathUtils {
     /**
      * Returns classpath entries
      * @return All entries found in the current classloader
-     * @throws ClasspathException
+     * @throws ClasspathException In case of problem
      */
     public static List<String> getClassPathElements() throws ClasspathException {
         ClassLoader cl = ClasspathUtils.class.getClassLoader();
