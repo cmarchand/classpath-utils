@@ -74,10 +74,10 @@ public class ClasspathUtilsTest {
                 else return null;
             }
         };
-        ClasspathUtils.setCallback(callback);
         ClasspathUtils cu = new ClasspathUtils(this.getClass().getClassLoader());
+        cu.setCallback(callback);
         String result = cu.getArtifactJarUri("pouet", "art");
-        ClasspathUtils.removeCallback();
         assertEquals("file:/usr/local/", result);
+        cu.removeCallback();
     }
 }

@@ -46,7 +46,7 @@ public class ClasspathUtils {
     private final List<String> classpathElements;
     private final ClassLoader classloader;
     
-    private static final ThreadLocal<NotFoundCallback> PROVIDER = new ThreadLocal<>();
+    private final ThreadLocal<NotFoundCallback> provider = new ThreadLocal<>();
     
     /**
      * Constructs a new ClasspathUtils based on specified ClassLoader
@@ -83,10 +83,10 @@ public class ClasspathUtils {
                 }
             }
             if(thisJar==null) {
-                if(PROVIDER==null) {
+                if(provider==null) {
                     System.err.println("PROVIDER is null");
                 }
-                NotFoundCallback callback = PROVIDER.get();
+                NotFoundCallback callback = provider.get();
                 if(callback!=null) {
                     String ret = callback.getArtifactJarNotFoundUri(groupId, artifactId);
                     if(ret==null) {
@@ -160,11 +160,11 @@ public class ClasspathUtils {
         return "jar:" + jarFile +"!/";
     }
     
-    public static void setCallback(NotFoundCallback callback) {
-        PROVIDER.set(callback);
+    public void setCallback(NotFoundCallback callback) {
+        provider.set(callback);
     }
     
-    public static void removeCallback() {
-        PROVIDER.remove();
+    public void removeCallback() {
+        provider.remove();
     }
 }
