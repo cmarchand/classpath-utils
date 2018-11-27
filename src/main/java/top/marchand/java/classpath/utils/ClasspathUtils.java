@@ -46,6 +46,8 @@ public class ClasspathUtils {
     private final List<String> classpathElements;
     private final ClassLoader classloader;
     
+    private static final ThreadLocal<NotFoundCallback> PROVIDER = new ThreadLocal<>();
+    
     /**
      * Constructs a new ClasspathUtils based on specified ClassLoader
      * @param cl The classloader to use
@@ -66,17 +68,32 @@ public class ClasspathUtils {
      * @throws ClasspathException In case of problem
      */
     public String getArtifactJarUri(final String groupId, final String artifactId) throws ClasspathException {
+        System.err.println("in getArtifactJarURI("+groupId+","+artifactId+")");
         try {
             String thisJar = null;
+            
             String marker = createMarker(groupId, artifactId);
-            for(String s:classpathElements) {
-                if(s.contains(marker)) {
-                    thisJar = s;
-                    break;
+            System.err.println("marker is "+marker);
+            if(marker!=null) {
+                for(String s:classpathElements) {
+                    if(s.contains(marker)) {
+                        thisJar = s;
+                        break;
+                    }
                 }
             }
             if(thisJar==null) {
-                throw new ClasspathException("Unable to locate xspec jar file from classpath-");
+                if(PROVIDER==null) {
+                    System.err.println("PROVIDER is null");
+                }
+                NotFoundCallback callback = PROVIDER.get();
+                if(callback!=null) {
+                    String ret = callback.getArtifactJarNotFoundUri(groupId, artifactId);
+                    if(ret==null) {
+                        throw new ClasspathException("Unable to locate location for ("+groupId+","+artifactId+") from callback");
+                    } else return ret;
+                }
+                throw new ClasspathException("Unable to locate location for ("+groupId+","+artifactId+") from classpath");
             }
             String jarUri = makeJarUri(thisJar);
             return jarUri;
@@ -126,8 +143,12 @@ public class ClasspathUtils {
      */
     private String createMarker(String groupId, String artifactId) throws IOException {
         Properties props = new Properties();
-        props.load(classloader.getResourceAsStream("META-INF/maven/"+groupId+"/"+artifactId+"/pom.properties"));
-        return String.format("%s-%s", props.getProperty("artifactId",""), props.getProperty("version",""));
+        try {
+            props.load(classloader.getResourceAsStream("META-INF/maven/"+groupId+"/"+artifactId+"/pom.properties"));
+            return String.format("%s-%s", props.getProperty("artifactId",""), props.getProperty("version",""));
+        } catch(NullPointerException ex) {
+            return null;
+        }
     }
     /**
      * Transform a jar file to a URI, as to must be declared in catalog entries
@@ -137,5 +158,13 @@ public class ClasspathUtils {
      */
     private String makeJarUri(String jarFile) throws MalformedURLException {
         return "jar:" + jarFile +"!/";
+    }
+    
+    public static void setCallback(NotFoundCallback callback) {
+        PROVIDER.set(callback);
+    }
+    
+    public static void removeCallback() {
+        PROVIDER.remove();
     }
 }
