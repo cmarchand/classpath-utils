@@ -48,6 +48,8 @@ public class ClasspathUtils {
     
     private final ThreadLocal<NotFoundCallback> provider = new ThreadLocal<>();
     
+    public static final transient String LOG_PROPERTY = "top.marchand.java.classpath.utils.log";
+    
     /**
      * Constructs a new ClasspathUtils based on specified ClassLoader
      * @param cl The classloader to use
@@ -68,12 +70,12 @@ public class ClasspathUtils {
      * @throws ClasspathException In case of problem
      */
     public String getArtifactJarUri(final String groupId, final String artifactId) throws ClasspathException {
-        System.err.println("in getArtifactJarURI("+groupId+","+artifactId+")");
+        log("in getArtifactJarURI("+groupId+","+artifactId+")");
         try {
             String thisJar = null;
             
             String marker = createMarker(groupId, artifactId);
-            System.err.println("marker is "+marker);
+            log("marker is "+marker);
             if(marker!=null) {
                 for(String s:classpathElements) {
                     if(s.contains(marker)) {
@@ -84,16 +86,20 @@ public class ClasspathUtils {
             }
             if(thisJar==null) {
                 if(provider==null) {
-                    System.err.println("PROVIDER is null");
+                    log("provider is null");
                 }
                 NotFoundCallback callback = provider.get();
                 if(callback!=null) {
                     String ret = callback.getArtifactJarNotFoundUri(groupId, artifactId);
                     if(ret==null) {
                         throw new ClasspathException("Unable to locate location for ("+groupId+","+artifactId+") from callback");
-                    } else return ret;
+                    } else {
+                        return ret;
+                    }
+                } else {
+                    System.err.println("callback is null");
+                    throw new ClasspathException("Unable to locate location for ("+groupId+","+artifactId+") from classpath");
                 }
-                throw new ClasspathException("Unable to locate location for ("+groupId+","+artifactId+") from classpath");
             }
             String jarUri = makeJarUri(thisJar);
             return jarUri;
@@ -166,5 +172,11 @@ public class ClasspathUtils {
     
     public void removeCallback() {
         provider.remove();
+    }
+    
+    private void log(String msg) {
+        if("true".equals(System.getProperty(LOG_PROPERTY))) {
+            System.out.println(msg);
+        }
     }
 }
