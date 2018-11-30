@@ -4,7 +4,7 @@
 
     <groupId>top.marchand.java.utils</groupId>
     <artifactId>classpath-utils</artifactId>
-    <version>1.02.01-SNAPSHOT</version>
+    <version>1.02.01</version>
     <packaging>jar</packaging>
 
     <name>Classpath Utils</name>
