@@ -36,34 +36,37 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  *
  * @author cmarchand
  */
 public class ClasspathUtilsTest {
-    
-    @Test
-    public void testClasspathNotEmpty() throws ClasspathException, IOException {
-        List<String> ret = ClasspathUtils.getClassPathElements();
-        assertFalse("no classpath elements found", ret.isEmpty());
-        ret = ClasspathUtils.getClasspathElements(Assert.class.getClassLoader());
-        assertFalse("no classpath elements found", ret.isEmpty());
-        ClassLoader assertCL = Assert.class.getClassLoader();
-        assertSame("AssertClassLoader is not same as current classloader", assertCL, ClasspathUtils.class.getClassLoader());
-        System.out.println("this classloader is "+this.getClass().getClassLoader());
-        System.out.println(((URLClassLoader)this.getClass().getClassLoader()).findResource("org/junit/Assert.class").toString());
-        for(URL url:((URLClassLoader)this.getClass().getClassLoader()).getURLs()) {
-            System.out.println(url);
-        }
+
+    @BeforeClass
+    public static void setLogOn() {
+        System.setProperty(ClasspathUtils.LOG_PROPERTY, "true");
     }
     @Test
     public void testJUnitIsIn() throws ClasspathException {
         ClasspathUtils cu = new ClasspathUtils(this.getClass().getClassLoader());
         String junitUri = cu.getArtifactJarUri("org.apache.maven.surefire", "surefire-junit4");
+        
+        ModuleLayer layer = getClass().getModule().getLayer();
+        for(Module m: layer.modules()) {
+            System.out.println("Found module "+m.getName());
+        }
+        System.out.println("module JUnit is "+(Assert.class.getModule().isNamed() ? Assert.class.getModule().getName() : Assert.class.getModule().toString()));
+        for(String key: System.getProperties().stringPropertyNames()) {
+            System.out.println("sysProp "+key);
+        }
+        System.out.println("java.class.path="+System.getProperty("java.class.path"));
+        System.out.println("jdk.module.path="+System.getProperty("jdk.module.path"));
         assertNotNull("surefire-junit URI is null", junitUri);
     }
-    @Test
+    @Test @Ignore
     public void testDirectoryViaCallback() throws ClasspathException {
         NotFoundCallback callback = new NotFoundCallback() {
             @Override

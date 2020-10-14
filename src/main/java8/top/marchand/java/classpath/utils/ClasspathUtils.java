@@ -114,7 +114,7 @@ public class ClasspathUtils {
      * @return Entries found, if <tt>cl</tt> is a {@link URLClassLoader}
      * @throws ClasspathException In case of problem
      */
-    public static List<String> getClasspathElements(ClassLoader cl) throws ClasspathException {
+    private static List<String> getClasspathElements(ClassLoader cl) throws ClasspathException {
         if(cl instanceof URLClassLoader) {
             URLClassLoader ucl = (URLClassLoader)cl;
             List<String> ret = new ArrayList(ucl.getURLs().length);
@@ -134,7 +134,7 @@ public class ClasspathUtils {
      * @return All entries found in the current classloader
      * @throws ClasspathException In case of problem
      */
-    public static List<String> getClassPathElements() throws ClasspathException {
+    private static List<String> getClassPathElements() throws ClasspathException {
         ClassLoader cl = ClasspathUtils.class.getClassLoader();
         return getClasspathElements(cl);
     }
